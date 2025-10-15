@@ -1,5 +1,3 @@
-import { puter } from "puter-js";
-
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -9,11 +7,18 @@ export default async function handler(req, res) {
   const prompt = messages?.[0]?.content || "Hello!";
 
   try {
-    const reply = await puter.chat({ prompt, model });
+    const response = await fetch("https://api.puter.com/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt, model })
+    });
+
+    const data = await response.json();
+
     res.status(200).json({
-      choices: [{ message: { content: reply.text } }]
+      choices: [{ message: { content: data.text } }]
     });
   } catch (err) {
-    res.status(500).json({ error: "Failed to fetch from Puter.js", details: err.message });
+    res.status(500).json({ error: "Failed to fetch from Puter API", details: err.message });
   }
-} 
+}
