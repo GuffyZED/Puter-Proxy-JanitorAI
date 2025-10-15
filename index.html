@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Puter Proxy</title>
+  <script src="https://puter.com/puter.js"></script>
+</head>
+<body>
+  <script>
+    async function handleRequest(req) {
+      const body = await req.json();
+      const prompt = body?.messages?.[0]?.content || "Hello!";
+      const model = body?.model || "gpt-4";
+
+      const reply = await puter.chat({ prompt, model });
+      return new Response(JSON.stringify({
+        choices: [{ message: { content: reply.text } }]
+      }), {
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
+    self.addEventListener("fetch", event => {
+      if (event.request.method === "POST") {
+        event.respondWith(handleRequest(event.request));
+      }
+    });
+  </script>
+</body>
+</html>
